@@ -1,0 +1,10 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Customer</title><link rel="stylesheet" href="../dashboard.css"></head><body>
+<header><b>Local Food</b><input id="search" placeholder="Pizza, Biryani or restaurant name"><button onclick="searchFood()">Search</button></header>
+<main><p id="status">Finding food near you…</p><div id="results" class="grid"></div><h2>My Orders</h2><div id="orders"></div></main>
+<script src="../dashboard.js"></script><script>
+let coords=null;
+function searchFood(){let q=encodeURIComponent(search.value),u='/api/v1/restaurants/?q='+q;if(coords)u+=`&lat=${coords.latitude}&lng=${coords.longitude}`;
+api(u).then(r=>r.json()).then(d=>{results.innerHTML=d.map(x=>`<article><h3>${x.name}</h3><p>${x.description||''}</p><a href="restaurant.html?id=${x.id}">View Menu</a></article>`).join('')||'<p>No matching restaurants found.</p>'})}
+if(navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>{coords=p.coords;status.textContent='Restaurants available in your service area';searchFood()},()=>status.textContent='Allow location to find available restaurants.');
+api('/api/v1/orders/').then(r=>r.ok?r.json():[]).then(d=>orders.innerHTML=d.map(o=>`<article><b>Order #${o.id}</b><p>${o.status} · ₹${o.total}</p></article>`).join('')).catch(()=>{});
+</script></body></html>

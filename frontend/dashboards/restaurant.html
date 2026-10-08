@@ -1,0 +1,17 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Menu</title><link rel="stylesheet" href="../dashboard.css"></head><body>
+<header><a href="customer.html">← Food</a><b id="title"></b></header><main><div id="restaurant"></div><div id="menu" class="grid"></div>
+<aside><h2>Cart</h2><div id="cart"></div><input id="address" placeholder="Delivery address">
+<button onclick="checkout()">Place Order</button></aside></main><script src="../dashboard.js"></script><script>
+let cart=[];const rid=new URLSearchParams(location.search).get('id');
+async function load(){let r=await api('/api/v1/restaurants/'+rid+'/');let x=await r.json();title.textContent=x.name;
+restaurant.innerHTML='<h1>'+x.name+'</h1><p>'+x.description+'</p>';
+menu.innerHTML=(x.products||[]).map(p=>`<article><h3>${p.name}</h3><p>₹${p.price}</p><button onclick='add(${p.id},${JSON.stringify(p.name)},${p.price})'>Add</button></article>`).join('')}
+function add(id,name,price){let x=cart.find(i=>i.product_id===id);if(x)x.quantity++;else cart.push({product_id:id,name,price,quantity:1});render()}
+function render(){cartEl.innerHTML=cart.map(x=>`<p>${x.name} × ${x.quantity} — ₹${x.price*x.quantity}</p>`).join('')}
+function checkout(){if(!cart.length)return alert('Cart empty');if(!navigator.geolocation)return alert('Location required');
+navigator.geolocation.getCurrentPosition(async p=>{try{let r=await api('/api/v1/orders/',{method:'POST',body:JSON.stringify({
+restaurant_id:Number(rid),items:cart.map(x=>({product_id:x.product_id,quantity:x.quantity})),
+delivery_address:address.value,delivery_latitude:p.coords.latitude,delivery_longitude:p.coords.longitude})});
+let o=await r.json();if(!r.ok)throw Error(o.detail||'Order failed');alert('Order #'+o.id+' placed');cart=[];render()}catch(e){alert(e.message)}},()=>alert('Please allow location.'))}
+load();
+</script></body></html>

@@ -1,0 +1,1 @@
+const API_BASE='';async function api(path,opts={}){opts.headers={...(opts.headers||{}),'Content-Type':'application/json'};const r=await fetch(API_BASE+path,{credentials:'include',...opts});if(!r.ok)throw new Error(await r.text());return r}

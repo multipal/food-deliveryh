@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Restaurant Management</title><link rel="stylesheet" href="../dashboard.css"></head>
+<body><main class="dashboard"><h1>Restaurant Management</h1><p>Approved restaurant के products और availability manage करें.</p><form id="add"><input id="name" placeholder="Product name" required><input id="price" type="number" step="0.01" placeholder="Price" required><input id="desc" placeholder="Description"><button>Add Product</button></form><div id="list">Loading...</div></main>
+<script>
+const H=()=>({Authorization:'Token '+(localStorage.getItem('token')||''),'Content-Type':'application/json'});
+async function load(){const r=await fetch('/api/v1/restaurants/me/products/',{headers:H()});const a=await r.json();document.getElementById('list').innerHTML=Array.isArray(a)?a.map(p=>`<article class="card"><b>${p.name}</b> — ₹${p.price}<br>${p.description||''}<br><button onclick="toggle(${p.id},${!p.available})">${p.available?'Mark unavailable':'Mark available'}</button></article>`).join(''):'Access denied';}
+async function toggle(id,v){await fetch('/api/v1/restaurants/me/products/'+id+'/availability/',{method:'PATCH',headers:H(),body:JSON.stringify({available:v})});load();}
+document.getElementById('add').onsubmit=async e=>{e.preventDefault();await fetch('/api/v1/restaurants/me/products/',{method:'POST',headers:H(),body:JSON.stringify({name:name.value,price:price.value,description:desc.value})});e.target.reset();load();};load();
+</script></body></html>

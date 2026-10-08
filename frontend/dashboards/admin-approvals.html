@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Master Admin - Applications</title><link rel="stylesheet" href="../dashboard.css"></head>
+<body><main class="dashboard"><h1>Master Admin — Pending Applications</h1><p>Restaurant और Delivery applications को यहाँ approve/reject करें.</p><div id="status"></div><div id="applications">Loading...</div></main>
+<script>
+const API='/api/v1/auth/';
+function token(){return localStorage.getItem('token')||'';}
+async function load(){const r=await fetch(API+'admin/applications/',{headers:{Authorization:'Token '+token()}}); const box=document.getElementById('applications'); if(!r.ok){box.textContent='Admin access required.';return;} const rows=await r.json(); if(!rows.length){box.textContent='No pending applications.';return;} box.innerHTML=rows.map(x=>`<article class="card"><h3>${x.role.toUpperCase()} — ${x.username}</h3><p>${x.phone||''} ${x.email||''}</p>${x.restaurant?`<p><b>${x.restaurant.name}</b><br>${x.restaurant.address}</p>`:''}<button onclick="act(${x.id},'approve')">Approve</button> <button onclick="act(${x.id},'reject')">Reject</button></article>`).join('');}
+async function act(id,action){const r=await fetch(API+'admin/applications/'+id+'/'+action+'/',{method:'POST',headers:{Authorization:'Token '+token()}}); document.getElementById('status').textContent=r.ok?'Updated.':'Action failed.'; load();}
+load();
+</script></body></html>
